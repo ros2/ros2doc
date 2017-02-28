@@ -1,0 +1,17 @@
+<html>
+  <head>
+    <title>ROS 2 package index</title>
+  </head>
+  <body>
+    <h1>ROS 2 packages</h1>
+    <ul>
+    {%- for pkg_name in pkg_names %}
+      {%- if pkg_name[1] %}
+      <li><a href="{{ pkg_name[0] }}/index.html">{{ pkg_name[0] }}</a></li>
+      {%- else %}
+      <li>{{ pkg_name[0] }}</li>
+      {%- endif %}
+    {%- endfor %}
+    </ul>
+  </body>
+</html>
