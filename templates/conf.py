@@ -1,7 +1,10 @@
 import sys
 import os
 
-extensions = []
+extensions = ['breathe', 'sphinx.ext.viewcode', 'sphinx.ext.autodoc']
+breathe_projects = { '{{ pkg_name }}': '{{doxygen_path}}' }
+breathe_default_project = '{{ pkg_name }}'
+breathe_domain_by_extension = { "h": "cpp" }
 templates_path = ['_templates']
 source_suffix = '.rst'
 master_doc = 'index'
