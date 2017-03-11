@@ -5,11 +5,11 @@
   <body>
     <h1>ROS 2 packages</h1>
     <ul>
-    {%- for pkg_name in pkg_names %}
-      {%- if pkg_name[1] %}
-      <li><a href="{{ pkg_name[0] }}/index.html">{{ pkg_name[0] }}</a></li>
+    {%- for pkg in pkgs %}
+      {%- if pkg['generated'] %}
+      <li><a href="{{ pkg['name']}}/index.html">{{ pkg['name'] }}</a></li>
       {%- else %}
-      <li>{{ pkg_name[0] }}</li>
+      <li>{{ pkg['name'] }}</li>
       {%- endif %}
     {%- endfor %}
     </ul>
