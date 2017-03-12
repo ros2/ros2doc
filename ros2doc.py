@@ -11,6 +11,8 @@ import shutil
 import subprocess
 import sys
 
+ACTUALLY_RUN_DOCGEN = True
+
 def run_shell_command(cmd, in_path=None):
     print("running command in path [%s]: %s" % (in_path, cmd))
     subprocess.call(cmd, shell=True, cwd=in_path)
@@ -69,7 +71,8 @@ def generate_pkg_doc(pkgs_doc_path, pkgs_html_root, pkg, jinja_env):
     doxygen_conf_file = open(doxygen_conf_path, 'w')
     doxygen_conf_file.write(doxygen_conf_template.render(pkg_name=pkg['name']))
     doxygen_conf_file.close()
-    run_shell_command("doxygen doxygen.conf", doc_path)
+    if ACTUALLY_RUN_DOCGEN:
+        run_shell_command("doxygen doxygen.conf", doc_path)
 
     doxygen_path = os.path.join(doc_path, 'doxygen', 'xml')
 
@@ -83,19 +86,28 @@ def generate_pkg_doc(pkgs_doc_path, pkgs_html_root, pkg, jinja_env):
 
     conf_py_path = os.path.join(doc_path, 'conf.py')
     print("hai i will now create a conf.py at %s" % conf_py_path)
-    conf_py_file = open(conf_py_path, 'w')
     conf_py_template = jinja_env.get_template('conf.py')
+    conf_py_file = open(conf_py_path, 'w')
     conf_py_file.write(conf_py_template.render(pkg_name=pkg['name'], doxygen_path=doxygen_path))
     conf_py_file.close()
     #run_shell_command("sphinx-build -b html . {0}".format(pkg_html_output_path), doc_path)
     ros2doc_path = os.path.abspath('.')  # yeah that's probably not great
-    run_shell_command("{0}/sphinx3-build -b html . {1}".format(ros2doc_path, pkg_html_output_path), doc_path)
+    if ACTUALLY_RUN_DOCGEN:
+        run_shell_command("{0}/sphinx3-build -b html . {1}".format(ros2doc_path, pkg_html_output_path), doc_path)
     pkg['generated'] = True  # we've built docs for this pkg
- 
+
+    pkg['parsed'].build_depends.sort(key=lambda x: x.name)
+    pkg['parsed'].exec_depends.sort(key=lambda x: x.name)
+    pkg['parsed'].test_depends.sort(key=lambda x: x.name)
+
+    # now generate a summary page for this package
+    summary_filename = os.path.join(html_output_path, 'summary', pkg['name']+'.html')
+    summary_template = jinja_env.get_template('summary.html')
+    summary_file = open(summary_filename, 'w')
+    summary_file.write(summary_template.render(pkg=pkg))
+    summary_file.close()
 
 def make_index(index_filename, pkgs, jinja_env):
-    # make the index file
-    #jinja_env = jinja2.Environment(loader=jinja2.PackageLoader('ros2doc', 'templates'), autoescape=jinja_autoescape)
     index_template = jinja_env.get_template('index.html')
     print("creating index file at {0}".format(index_filename))
     index_file = open(index_filename, 'w')
@@ -125,16 +137,22 @@ if __name__ == '__main__':
     html_output_path = os.path.abspath(os.path.join(buildpath, 'html'))
     os.makedirs(html_output_path)
 
+    summary_output_path = os.path.join(html_output_path, 'summary')
+    os.makedirs(summary_output_path)
+
     pkgs = parse_pkgs()
     print("found {0} packages".format(len(pkgs)))
+    pkgs.sort(key=lambda x: x['name'])
 
     for pkg in pkgs:
+        # simple sanity check to avoid obvious badness in filesystem
+        if pkg['name'][0] == '/' or '.' in pkg['name']:
+            print("skipping illegal package name: [{0}]".format(pkg['name']))
+            continue
         if args.all or (pkg['name'] in args.pkg):
             generate_pkg_doc(pkgs_doc_path, html_output_path, pkg, jinja_env)
 
     index_filename = os.path.join(html_output_path, 'index.html')
     make_index(index_filename, pkgs, jinja_env)
-    '''
-    #pkg_names.sort()
+    print(pkgs[0]['parsed'])
 
-    '''

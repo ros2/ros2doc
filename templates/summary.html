@@ -1,0 +1,62 @@
+<html>
+<head>
+  <title>{{ pkg['name'] }}</title>
+  <style>
+    body { font-family: Arial, Helvetica, sans-serif; }
+    h1 { font-size: 300%; }
+    table { border-collapse: collapse; }
+    th { text-align: left; font-size: 150%; }
+    tr.grey { background-color: #ddd; }
+    td { padding: 5px; }
+  </style>
+</head>
+<body>
+  <h1>{{ pkg['name'] }}</h1>
+  <p><a href="../{{ pkg['name'] }}/index.html">auto-generated documentation</a></p>
+  <p>{{ pkg['parsed'].description }}</p>
+  <table>
+  {%- for url in pkg['parsed'].urls %}
+    <tr><td>Website:</td><td><a href="{{ url }}">{{ url }}</a></td></tr>
+  {%- endfor %}
+  {%- for license in pkg['parsed'].licenses %}
+    <tr class="grey"><td>License:</td><td>{{ license }}</td></tr>
+  {%- endfor %}
+  {%- for author in pkg['parsed'].authors %}
+    <tr><td>Author:</td><td><a href="mailto:{{ author.email }}">{{ author.name }}</a></td></tr>
+  {%- endfor %}
+  {%- for maintainer in pkg['parsed'].maintainers %}
+    {%- if maintainer.name|length == 0 %}
+      <tr><td>Maintainer:</td><td><a href="mailto:{{ maintainer.email }}">{{ maintainer.email}}</a></td></tr>
+    {%- else %}
+      <tr><td>Maintainer:</td><td><a href="mailto:{{ maintainer.email }}">{{ maintainer.name}}</a></td></tr>
+    {%- endif %}
+  {%- endfor %}
+  <tr class="grey">
+    <td style="vertical-align: top;">Build dependencies:</td>
+    <td>
+  {%- for build_depend in pkg['parsed'].build_depends %}
+      <a href="{{ build_depend }}.html">{{ build_depend }}</a><br />
+  {%- endfor %}
+    </td>
+  </tr>
+  <tr>
+    <td style="vertical-align: top;">Runtime (exec) dependencies:</td>
+    <td>
+  {%- for exec_depend in pkg['parsed'].exec_depends %}
+      <a href="{{ exec_depend}}.html">{{ exec_depend }}</a><br />
+  {%- endfor %}
+    </td>
+  </tr>
+  <tr class="grey">
+    <td style="vertical-align: top;">Test dependencies:</td>
+    <td>
+  {%- for test_depend in pkg['parsed'].test_depends %}
+      <a href="{{ test_depend }}.html">{{ test_depend }}</a><br />
+  {%- endfor %}
+    </td>
+  </tr>
+  </table>
+  <hr />
+  <p><a href="../index.html">Return to package list</a></p>
+</body>
+</html>
