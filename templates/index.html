@@ -1,17 +1,30 @@
 <html>
   <head>
     <title>ROS 2 package index</title>
+    <style>
+      body { font-family: Arial, Helvetica, sans-serif; }
+      h1 { font-size: 300%; }
+      th { text-align: left; font-size: 150%; }
+      table { border-collapse: collapse; }
+      tr.border { border-bottom: 1px solid black; }
+      tr:nth-child(even) { background-color: #ddd; }
+    </style>
   </head>
-  <body>
-    <h1>ROS 2 packages</h1>
-    <ul>
+  <h1>ROS 2 packages</h1>
+  <table style="width:800px">
+    <tr class="border">
+      <th>Package</th>
+    </tr>
     {%- for pkg in pkgs %}
+    <tr>
+      <td>
       {%- if pkg['generated'] %}
-      <li><a href="{{ pkg['name']}}/index.html">{{ pkg['name'] }}</a></li>
+        <a href="{{ pkg['name']}}/index.html">{{ pkg['name'] }}</a>
       {%- else %}
-      <li>{{ pkg['name'] }}</li>
+        {{ pkg['name'] }}
       {%- endif %}
+      </td>
+    </tr>
     {%- endfor %}
-    </ul>
-  </body>
+  </table>
 </html>
