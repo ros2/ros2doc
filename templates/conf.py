@@ -1,7 +1,7 @@
 import sys
 import os
 
-extensions = ['breathe', 'sphinx.ext.viewcode', 'sphinx.ext.autodoc']
+extensions = ['breathe', 'sphinx.ext.viewcode', 'sphinx.ext.autodoc', 'sphinx.ext.intersphinx']
 breathe_projects = { '{{ pkg_name }}': '{{doxygen_path}}' }
 breathe_default_project = '{{ pkg_name }}'
 breathe_domain_by_extension = { "h": "cpp" }
@@ -25,4 +25,8 @@ latex_elements = { }
 latex_documents = [ (master_doc, '{{ pkg_name }}.tex', u'{{ pkg_name }} Documentation', u'ros', 'manual') ]
 man_pages = [ (master_doc, '{{ pkg_name }}', u'{{ pkg_name }} Documentation', [author], 1) ]
 texinfo_documents = [ (master_doc, '{{ pkg_name }}', u'{{ pkg_name }} Documentation', author, '{{ pkg_name }}', 'description', 'Miscellaneous') ]
-
+#intersphinx_mapping = {
+#    {%- for dep_pkg in dep_pkgs %}
+#    '{{ dep_pkg["name"]}}' : ('../html/{{ dep_pkg["name"] }}', '../html/{{dep_pkg["name"] }}/objects.inv'),
+#    {%- endfor %}
+#}

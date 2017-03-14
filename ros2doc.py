@@ -48,7 +48,7 @@ def parse_pkgs():
         pkgs.append(pkg_dict)
     return pkgs
 
-def generate_pkg_doc(pkgs_doc_path, pkgs_html_root, pkg, jinja_env):
+def generate_pkg_doc(pkgs_doc_path, pkgs_html_root, pkg, dep_pkgs, jinja_env):
     # first, we need to copy the sources somewhere temporary because we'll
     # probably generate debris that we don't want to clutter up the source tree
     pkg_copy_path = os.path.join(pkgs_doc_path, pkg['name'])
@@ -65,7 +65,8 @@ def generate_pkg_doc(pkgs_doc_path, pkgs_html_root, pkg, jinja_env):
     print("doc path exists")
     pkg_html_output_path = os.path.join(pkgs_html_root, pkg['name'])
     os.makedirs(pkg_html_output_path)
-    # hooray there is a doc directory. let's create a conf.py in there
+
+    # let's create a doxygen.conf and run doxygen
     doxygen_conf_path = os.path.join(doc_path, 'doxygen.conf')
     doxygen_conf_template = jinja_env.get_template('doxygen.conf')
     doxygen_conf_file = open(doxygen_conf_path, 'w')
@@ -84,13 +85,13 @@ def generate_pkg_doc(pkgs_doc_path, pkgs_html_root, pkg, jinja_env):
         sphinx_index.write(sphinx_index_template.render(pkg_name=pkg['name']))
         sphinx_index.close()
 
+    # now let's create a conf.py
     conf_py_path = os.path.join(doc_path, 'conf.py')
     print("hai i will now create a conf.py at %s" % conf_py_path)
     conf_py_template = jinja_env.get_template('conf.py')
     conf_py_file = open(conf_py_path, 'w')
-    conf_py_file.write(conf_py_template.render(pkg_name=pkg['name'], doxygen_path=doxygen_path))
+    conf_py_file.write(conf_py_template.render(pkg_name=pkg['name'], doxygen_path=doxygen_path, dep_pkgs=dep_pkgs, pkgs_html_root=pkgs_html_root))
     conf_py_file.close()
-    #run_shell_command("sphinx-build -b html . {0}".format(pkg_html_output_path), doc_path)
     ros2doc_path = os.path.abspath('.')  # yeah that's probably not great
     if ACTUALLY_RUN_DOCGEN:
         run_shell_command("{0}/sphinx3-build -b html . {1}".format(ros2doc_path, pkg_html_output_path), doc_path)
@@ -142,7 +143,8 @@ if __name__ == '__main__':
 
     pkgs = parse_pkgs()
     print("found {0} packages".format(len(pkgs)))
-    pkgs.sort(key=lambda x: x['name'])
+    #pkgs.sort(key=lambda x: x['name'])
+    # todo: need to do a dependency sort, so that external links are available
 
     for pkg in pkgs:
         # simple sanity check to avoid obvious badness in filesystem
@@ -150,8 +152,9 @@ if __name__ == '__main__':
             print("skipping illegal package name: [{0}]".format(pkg['name']))
             continue
         if args.all or (pkg['name'] in args.pkg):
-            generate_pkg_doc(pkgs_doc_path, html_output_path, pkg, jinja_env)
+            generate_pkg_doc(pkgs_doc_path, html_output_path, pkg, pkgs, jinja_env)
 
+    pkgs.sort(key=lambda x: x['name'])
     index_filename = os.path.join(html_output_path, 'index.html')
     make_index(index_filename, pkgs, jinja_env)
     print(pkgs[0]['parsed'])
